@@ -1,20 +1,21 @@
 import { useEffect, useReducer, useRef } from 'react'
 
-const useAsyncReducer = (reducer, initialState) => {
-  const [state, dispatch] = useReducer(reducer, initialState)
+const useAsyncReducer = (reducer, initialState, init) => {
+  const [state, dispatch] = useReducer(reducer, initialState, init)
   
-  const asyncFunc = useRef(() => {})
+  const asyncFunc = useRef({ callback: () => {} })
 
   useEffect(() => {
-    asyncFunc.current(state)
+    asyncFunc.current.callback(state[asyncFunc.current.key])
   }, [state])
 
-  const dispatchAsync = (newState, callback) => {
-    asyncFunc.current = callback
-    dispatch(newState)
+  const asyncDispatch = (action, callback, key=null) => {
+    asyncFunc.current.callback = callback
+    asyncFunc.current.key = key
+    dispatch(action)
   }
 
-  return [state, dispatchAsync]
+  return [state, asyncDispatch]
 }
 
 export default useAsyncReducer
